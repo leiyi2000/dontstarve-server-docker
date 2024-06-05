@@ -1,1 +1,0 @@
-Replace the entire line with your cluster token from https://accounts.klei.com/account/game/servers?game=DontStarveTogether, DO NOT ADD A NEW LINE!

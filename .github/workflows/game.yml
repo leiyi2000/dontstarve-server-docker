@@ -26,27 +26,13 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and push 'public'
-        if: matrix.build-item.branch == 'public'
+      - name: Build and push
         uses: docker/build-push-action@v5
         with:
           context: ./game
           push: true
           tags: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/dontstarvetogether:public
-            ${{ secrets.DOCKERHUB_USERNAME }}/dontstarvetogether:latest
-          build-args: |
-            DST_BRANCH=${{ matrix.build-item.branch }}
-            DST_BUILDID=${{ matrix.build-item.buildid }}
-            DST_TIMEUPDATED=${{ matrix.build-item.timeupdated }}
-
-      - name: Build and push 'beta'
-        if: matrix.build-item.branch != 'public'
-        uses: docker/build-push-action@v5
-        with:
-          context: ./game
-          push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/dontstarvetogether:${{ matrix.build-item.branch }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/dontstarvetogether:${{ matrix.build-item.buildid }}
           build-args: |
             DST_BRANCH=${{ matrix.build-item.branch }}
             DST_BUILDID=${{ matrix.build-item.buildid }}
