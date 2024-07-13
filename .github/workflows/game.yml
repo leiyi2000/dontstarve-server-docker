@@ -37,3 +37,17 @@ jobs:
             DST_BRANCH=${{ matrix.build-item.branch }}
             DST_BUILDID=${{ matrix.build-item.buildid }}
             DST_TIMEUPDATED=${{ matrix.build-item.timeupdated }}
+
+      # Build and push to Private Docker Registry (110.40.166.27:5000)
+      - name: Build and Push to Private Docker Registry
+        env:
+          PRIVATE_REGISTRY: 110.40.166.27:5000
+        run: |
+          docker build -t $PRIVATE_REGISTRY/dontstarvetogether:${{ matrix.build-item.buildid }} \
+            --build-arg DST_BRANCH=${{ matrix.build-item.branch }} \
+            --build-arg DST_BUILDID=${{ matrix.build-item.buildid }} \
+            --build-arg DST_TIMEUPDATED=${{ matrix.build-item.timeupdated }} \
+            ./game
+          echo '{"insecure-registries":["110.40.166.27:5000"]}' | sudo tee /etc/docker/daemon.json
+          sudo systemctl restart docker
+          docker push $PRIVATE_REGISTRY/dontstarvetogether:${{ matrix.build-item.buildid }}
