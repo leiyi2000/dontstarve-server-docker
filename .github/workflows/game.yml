@@ -1,0 +1,51 @@
+name: Build Game Images
+
+on:
+  workflow_call:
+    inputs:
+      build-items:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        build-item: ${{ fromJson(inputs.build-items) }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up docker buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ./game
+          push: true
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/dontstarvetogether:${{ matrix.build-item.buildid }}
+          build-args: |
+            DST_BRANCH=${{ matrix.build-item.branch }}
+            DST_BUILDID=${{ matrix.build-item.buildid }}
+            DST_TIMEUPDATED=${{ matrix.build-item.timeupdated }}
+
+      - name: Push to Private Docker Registry
+        env:
+          PRIVATE_REGISTRY: swr.cn-north-4.myhuaweicloud.com/ylei
+        run: |
+          docker build -t $PRIVATE_REGISTRY/dontstarvetogether:${{ matrix.build-item.buildid }} \
+              --build-arg DST_BRANCH=${{ matrix.build-item.branch }} \
+              --build-arg DST_BUILDID=${{ matrix.build-item.buildid }} \
+              --build-arg DST_TIMEUPDATED=${{ matrix.build-item.timeupdated }} \
+              ./game
+          docker login -u cn-north-4@JWQDJ3H4XN4F6FEPC3T6 -p ${{ secrets.DOCKER__HW_TOKEN }} swr.cn-north-4.myhuaweicloud.com
+          docker push $PRIVATE_REGISTRY/dontstarvetogether:${{ matrix.build-item.buildid }}

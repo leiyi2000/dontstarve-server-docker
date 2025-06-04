@@ -2,10 +2,10 @@
 # Dockerfile that builds a Don't Starve Together dedicated server #
 ###################################################################
 
-# First stage: Download game
-FROM cm2network/steamcmd:root AS downloader
+# Base image: cm2network/steamcmd:root
+FROM cm2network/steamcmd:root-bookworm
 
-# Build Arguments for downloader
+# Build Arguments
 ARG DEBIAN_FRONTEND=noninteractive
 ARG LANG=C.UTF-8
 ARG LC_ALL=C.UTF-8
@@ -13,9 +13,15 @@ ARG DST_BRANCH
 ARG DST_BUILDID
 ARG DST_TIMEUPDATED
 
-# Environment settings for downloader
+# Metadata
+LABEL branch="${DST_BRANCH}"
+LABEL buildid="${DST_BUILDID}"
+LABEL timeupdated="${DST_TIMEUPDATED}"
+
+# Environment settings
 ENV STEAM_APPID=343050
 ENV STEAM_WORKSHOPID=322330
+ENV DST_BRANCH=${DST_BRANCH}
 ENV DST_DIR=${HOMEDIR}/dst
 ENV DST_GAMEDIR=${DST_DIR}/game
 ENV DST_SAVEDIR=${DST_DIR}/save
@@ -34,27 +40,6 @@ RUN set -x && \
     # Install Don't Starve Together
     mkdir -p "${DST_DIR}" "${DST_GAMEDIR}" "${DST_SAVEDIR}" "${DST_MODDIR}" "${DST_UGCMODDIR}" && \
     bash "${STEAMCMDDIR}/steamcmd.sh" +force_install_dir ${DST_GAMEDIR} +login anonymous +app_update ${STEAM_APPID} -beta "${DST_BRANCH}" validate +quit
-
-# Second stage: Setup environment
-FROM downloader AS game
-
-# Build Arguments
-ARG DST_BRANCH
-ARG DST_BUILDID
-ARG DST_TIMEUPDATED
-ARG DST_VERSION
-
-# Clear inherited labels
-LABEL maintainer="superjump.void@gmail.com"
-
-# Metadata
-LABEL branch="${DST_BRANCH}"
-LABEL buildid="${DST_BUILDID}"
-LABEL timeupdated="${DST_TIMEUPDATED}"
-LABEL version="${DST_VERSION}"
-
-# Additional environment settings
-ENV DST_VERSION=${DST_VERSION}
 
 # Set the working directory
 WORKDIR ${DST_GAMEDIR}/bin64
