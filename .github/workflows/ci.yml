@@ -3,7 +3,7 @@ name: Check and Update Game & Toolbox Images manually or every 30 Minutes
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 0 1 * *"
 
 jobs:
   check-update:
