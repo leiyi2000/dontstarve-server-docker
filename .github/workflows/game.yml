@@ -24,6 +24,7 @@ jobs:
         uses: docker/setup-buildx-action@v3
 
       - name: Build downloader
+        if: matrix.build-item.branch == 'public'
         uses: docker/build-push-action@v6
         with:
           context: "{{defaultContext}}:game"
@@ -31,7 +32,7 @@ jobs:
           load: true
           tags: dst-downloader:${{ matrix.build-item.branch }}
           build-args: |
-            DST_BRANCH=${{ matrix.build-item.branch }}
+            DST_BRANCH=public
             DST_BUILDID=${{ matrix.build-item.buildid }}
             DST_TIMEUPDATED=${{ matrix.build-item.timeupdated }}
           cache-from: type=gha
@@ -59,3 +60,17 @@ jobs:
             DST_VERSION=${{ steps.get-version.outputs.version }}
           cache-from: type=gha
           cache-to: type=gha,mode=max
+
+      - name: Push to Private Docker Registry
+        if: matrix.build-item.branch == 'public'
+        env:
+          PRIVATE_REGISTRY: swr.cn-north-4.myhuaweicloud.com/ylei
+        run: |
+          docker build -t $PRIVATE_REGISTRY/dontstarvetogether:${{ matrix.build-item.buildid }} \
+              --build-arg DST_BRANCH=public \
+              --build-arg DST_BUILDID=${{ matrix.build-item.buildid }} \
+              --build-arg DST_TIMEUPDATED=${{ matrix.build-item.timeupdated }} \
+              --build-arg DST_VERSION=${{ steps.get-version.outputs.version }} \
+              ./game
+          docker login -u cn-north-4@JWQDJ3H4XN4F6FEPC3T6 -p ${{ secrets.DOCKER__HW_TOKEN }} swr.cn-north-4.myhuaweicloud.com
+          docker push $PRIVATE_REGISTRY/dontstarvetogether:${{ matrix.build-item.buildid }}
