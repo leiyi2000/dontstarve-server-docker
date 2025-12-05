@@ -55,7 +55,7 @@ jobs:
 
   update-game-images:
     needs: check-update
-    if: needs.check-update.outputs.changed-list != '[]' && needs.check-update.outputs.pushed == 'true'
+    if: needs.check-update.outputs.changed-list != '[]'
     uses: ./.github/workflows/game.yml
     with:
       build-items: ${{ needs.check-update.outputs.changed-list }}
