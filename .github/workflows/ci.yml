@@ -52,27 +52,8 @@ jobs:
           echo $changed_list | jq
           echo "::endgroup::"
 
-      - name: Update version csv
-        run: |
-          echo "branch,buildid,timeupdated" > version.csv
-          csv_data=`echo $gameinfo | jq -r ".data.\"343050\".depots.branches | to_entries[] | select(.value.pwdrequired != \"1\") | \"\\(.key),\\(.value.buildid),\\(.value.timeupdated)\"" | sort -t, -k3 -n`
-          echo "$csv_data" >> version.csv
-
-          echo "::group::Version csv"
-          cat version.csv
-          echo "::endgroup::"
-
-      - name: Commit changes
-        id: commit-changes
-        uses: EndBug/add-and-commit@v9
-        with:
-          default_author: github_actions
-          message: "update version csv"
-          add: "version.csv"
-
   update-game-images:
     needs: check-update
-    if: needs.check-update.outputs.changed-list != '[]' && needs.check-update.outputs.pushed == 'true'
     uses: ./.github/workflows/game.yml
     with:
       build-items: ${{ needs.check-update.outputs.changed-list }}
