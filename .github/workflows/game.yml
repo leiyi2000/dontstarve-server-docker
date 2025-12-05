@@ -39,6 +39,7 @@ jobs:
           cache-to: type=gha,mode=max
 
       - name: Get game version
+        if: matrix.build-item.branch == 'public'
         id: get-version
         run: |
           version=$(docker run --rm dst-downloader:${{ matrix.build-item.branch }} cat /home/steam/dst/game/version.txt)
